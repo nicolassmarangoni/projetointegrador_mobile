@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';  // Importando o pacote
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_application_1/second_screen.dart';
+ // Importando o arquivo da segunda tela
 
 void main() {
   runApp(MyApp());
@@ -31,8 +33,8 @@ class WelcomeScreen extends StatelessWidget {
               Container(
                 margin: EdgeInsets.only(bottom: 20.0),
                 child: Image.asset(
-                  'logo.png', // Substitua pelo caminho da sua imagem de logo
-                  height: 50,
+                  'assets/images/logo.png', // Substitua pelo caminho da sua imagem de logo
+                  height: 100,
                 ),
               ),
               // Texto de boas-vindas
@@ -55,8 +57,11 @@ class WelcomeScreen extends StatelessWidget {
               // Botão de acesso
               ElevatedButton(
                 onPressed: () {
-                  // Ação do botão
-                  // Você pode navegar para a próxima tela aqui
+                  // Ação do botão para navegar para a próxima tela
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SecondScreen()), // Navega para a segunda tela
+                  );
                 },
                 child: Text('Acessar'),
                 style: ElevatedButton.styleFrom(
