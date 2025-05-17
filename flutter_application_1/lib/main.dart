@@ -8,6 +8,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,6 +20,8 @@ class MyApp extends StatelessWidget {
 }
 
 class WelcomeScreen extends StatelessWidget {
+  const WelcomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,17 +67,17 @@ class WelcomeScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => SecondScreen()), // Navega para a segunda tela
                   );
                 },
-                child: Text('Acessar'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue, // Substitui 'primary'
                   padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   textStyle: TextStyle(fontSize: 18),
                 ),
+                child: Text('Acessar'),
               ),
               SizedBox(height: 40),
               // Rodapé com a fonte Poppins
               Text(
-                'Todos os direitos reservados - Agromind 2023',
+                'Todos os direitos reservados - Agromind 2025',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(  // Usando a fonte Poppins aqui
                   fontSize: 14,

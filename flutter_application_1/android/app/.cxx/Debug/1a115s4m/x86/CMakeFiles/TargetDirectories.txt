@@ -1,0 +1,2 @@
+C:/Users/nickb/Downloads/projetointegrador_mobile/flutter_application_1/android/app/.cxx/Debug/1a115s4m/x86/CMakeFiles/edit_cache.dir
+C:/Users/nickb/Downloads/projetointegrador_mobile/flutter_application_1/android/app/.cxx/Debug/1a115s4m/x86/CMakeFiles/rebuild_cache.dir
