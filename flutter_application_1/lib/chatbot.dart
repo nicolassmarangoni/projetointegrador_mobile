@@ -17,7 +17,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
 
   Future<void> _sendMessage() async {
     final userMessage = _controller.text.trim();
-    String url = "https://profdanielvieira95-api-agro-langflow.hf.space/api/v1/run/fa47011f-110e-4e0a-b70d-e7c4c1ff6bf6";
+    String url = "https://nicolakskk-spaceintegrador.hf.space/api/v1/run/739b69e1-96c0-49bb-8ce0-7fc53ca19862";
 
     if (userMessage.isEmpty) return;
 
@@ -44,33 +44,22 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
         }),
       );
 
+      // Depuração - verificar o status e a resposta da API
+      print("Status Code: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+
       if (response.statusCode == 200) {
         final decoded = jsonDecode(utf8.decode(response.bodyBytes));
-        print("Resposta da API (decodificada): $decoded"); // <---- LINHA ADICIONADA
+        print("Resposta da API (decodificada): $decoded");
+
         String? botReply;
 
-        // Tenta acessar a resposta em diferentes níveis
-        if (decoded is Map && decoded.containsKey("outputs") && decoded["outputs"] is List && decoded["outputs"].isNotEmpty) {
-          final firstOutput = decoded["outputs"][0];
-          if (firstOutput is Map && firstOutput.containsKey("outputs") && firstOutput["outputs"] is List && firstOutput["outputs"].isNotEmpty) {
-            final secondOutput = firstOutput["outputs"][0];
-            if (secondOutput is Map && secondOutput.containsKey("results") && secondOutput["results"] is List && secondOutput["results"].isNotEmpty) {
-              final firstResult = secondOutput["results"][0];
-              if (firstResult is Map && firstResult.containsKey("message") && firstResult["message"] is Map && firstResult["message"].containsKey("text")) {
-                botReply = firstResult["message"]["text"];
-              }
-            } else if (secondOutput is Map && secondOutput.containsKey("text")) {
-              botReply = secondOutput["text"];
-            }
-          } else if (firstOutput is Map && firstOutput.containsKey("text")) {
-            botReply = firstOutput["text"];
-          } else if (firstOutput is String) {
-            botReply = firstOutput;
-          }
-        } else if (decoded is Map && decoded.containsKey("text")) {
-          botReply = decoded["text"];
-        } else if (decoded is String) {
-          botReply = decoded;
+        // Acessando a resposta correta na estrutura aninhada
+        try {
+          botReply = decoded['outputs'][0]['outputs'][0]['results']['message']['text'] ?? 'Não consegui entender a resposta.';
+        } catch (e) {
+          print("Erro ao acessar a resposta: $e");
+          botReply = 'Erro ao acessar a resposta';
         }
 
         setState(() {

@@ -1,60 +1,138 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/app_drawer.dart'; // Importe o arquivo drawer.dart
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  _DashboardScreenState createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  // Variáveis de estado
+  int? temperatura;
+  int? umidade;
+  int? bomba;
+  int? sensorUmidSolo;
+  int? pH;
+  Color statusCor = Colors.red;
+
+  // Função para realizar a requisição
+  Future<void> _leitura() async {
+    final response = await http.get(Uri.parse('https://apiintegradoresp-production.up.railway.app/dados'));
+    
+    if (response.statusCode == 200) {
+      final dados = json.decode(response.body);
+      setState(() {
+        temperatura = dados["temperatura"];
+        umidade = dados["umidade"];
+        sensorUmidSolo = dados["sensor_umidsolo"];
+        pH = dados["pH"];
+        bomba = dados["bomba"];
+      });
+    } else {
+      throw Exception('Falha ao carregar dados');
+    }
+  }
+
+  // Função para ligar a bomba
+  Future<void> _ligarBomba() async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://apiintegradoresp-production.up.railway.app/bomba'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'estado': 1}),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          statusCor = Colors.green;
+        });
+        print("Bomba ligada com sucesso!");
+      } else {
+        print("Erro ao ligar a bomba: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Erro na requisição: $e");
+    }
+  }
+
+  // Função para desligar a bomba
+  Future<void> _desligarBomba() async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://apiintegradoresp-production.up.railway.app/bomba'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'estado': 0}),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          statusCor = Colors.red;
+        });
+        print("Bomba desligada com sucesso!");
+      } else {
+        print("Erro ao desligar a bomba: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Erro na requisição: $e");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _leitura(); // Carregar dados iniciais
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: Builder(
-          builder: (BuildContext context) {
-            return IconButton(
-              icon: const Icon(Icons.menu, color: Colors.grey),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
-        ),
-        title: Center(
-          child: Image.asset(
-            'assets/images/logo.png', // Substitua pelo caminho real da sua imagem verde
-            height: 30,
-          ),
-        ),
-        actions: const [
-          SizedBox(width: 48), // Espaço para alinhar o título ao centro
-        ],
+        title: const Text('Dashboard'),
+        centerTitle: true,
       ),
-      drawer: const AppDrawer(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Exibição de dados
+            _buildCard('Temperatura', temperatura?.toString() ?? 'N/A', Colors.yellow, LineChartPainter()),
             const SizedBox(height: 16),
-            const Center(
-              child: Text(
-                'Medidores',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
+            _buildCard('Umidade', umidade?.toString() ?? 'N/A', Colors.blue, LineChartPainter()),
+            const SizedBox(height: 16),
+            _buildCard('Sensor de Umidade do Solo', sensorUmidSolo?.toString() ?? 'N/A', Colors.green, LineChartPainter()),
+            const SizedBox(height: 16),
+            _buildCard('pH', pH?.toString() ?? 'N/A', Colors.orange, LineChartPainter()),
+            const SizedBox(height: 16),
+
+            // Controle da bomba
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Container(
+                alignment: Alignment.center,
+                width: 200,
+                height: 200,
+                color: statusCor,
+                child: const Text(
+                  "Bomba de irrigação",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
               ),
             ),
-            const SizedBox(height: 24),
-            _buildTemperatureCard(),
-            const SizedBox(height: 24),
-            _buildHumidityCard(),
-            const SizedBox(height: 24),
-            _buildPumpCard(),
-            const SizedBox(height: 32),
-            const Center(
-              child: Text(
-                'Todos os direitos reservados - Agromind 2025',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
+            ElevatedButton(
+              onPressed: _ligarBomba,
+              child: const Text('Ligar bomba'),
+            ),
+            ElevatedButton(
+              onPressed: _desligarBomba,
+              child: const Text('Desligar bomba'),
+            ),
+            ElevatedButton(
+              onPressed: _leitura,
+              child: const Text('Atualizar Dados'),
             ),
           ],
         ),
@@ -62,7 +140,8 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTemperatureCard() {
+  // Função para construir os cards de medição
+  Widget _buildCard(String title, String value, Color statusColor, CustomPainter chart) {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -72,156 +151,33 @@ class DashboardScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Temperatura', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
+          Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
           const SizedBox(height: 8),
           Row(
-            children: const [
-              Text('Status:', style: TextStyle(color: Colors.black54)),
-              SizedBox(width: 8),
-              Icon(Icons.brightness_1, color: Colors.yellow), // Exemplo de status
+            children: [
+              const Text('Status:', style: TextStyle(color: Colors.black54)),
+              const SizedBox(width: 8),
+              Icon(Icons.brightness_1, color: statusColor),
             ],
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text('34', style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.black87)),
-              Text('°C', style: TextStyle(fontSize: 24, color: Colors.black87)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 50,
-            child: CustomPaint(
-              painter: LineChartPainter(),
+          Center(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.black87),
             ),
           ),
           const SizedBox(height: 16),
-          const Text('Legenda:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
-          const SizedBox(height: 4),
-          Row(
-            children: const [
-              Icon(Icons.brightness_1, color: Colors.green),
-              SizedBox(width: 4),
-              Text('Bom', style: TextStyle(color: Colors.black54)),
-              SizedBox(width: 8),
-              Icon(Icons.brightness_1, color: Colors.yellow),
-              SizedBox(width: 4),
-              Text('Alerta', style: TextStyle(color: Colors.black54)),
-              SizedBox(width: 8),
-              Icon(Icons.brightness_1, color: Colors.red),
-              SizedBox(width: 4),
-              Text('Perigo', style: TextStyle(color: Colors.black54)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHumidityCard() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Umidade', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
-          const SizedBox(height: 8),
-          Row(
-            children: const [
-              Text('Status:', style: TextStyle(color: Colors.black54)),
-              SizedBox(width: 8),
-              Icon(Icons.brightness_1, color: Colors.green), // Exemplo de status
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text('68', style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.black87)),
-              Text('%', style: TextStyle(fontSize: 24, color: Colors.black87)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 50,
-            width: 50,
-            child: Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                Container(
-                  height: 50,
-                  width: 30,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey[400]!),
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
-                ),
-                Container(
-                  height: 50 * 0.68, // Simula a barra de umidade
-                  width: 30,
-                  decoration: BoxDecoration(
-                    color: Colors.blue[300],
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          SizedBox(height: 50, child: CustomPaint(painter: chart)),
           const SizedBox(height: 16),
           const Text('Legenda:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
-          const SizedBox(height: 4),
-          Row(
-            children: const [
-              Icon(Icons.brightness_1, color: Colors.green),
-              SizedBox(width: 4),
-              Text('Bom', style: TextStyle(color: Colors.black54)),
-              SizedBox(width: 8),
-              Icon(Icons.brightness_1, color: Colors.red),
-              SizedBox(width: 4),
-              Text('Perigo', style: TextStyle(color: Colors.black54)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPumpCard() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const Text('Bomba', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
-          const SizedBox(height: 8),
-          const Text('Status:', style: TextStyle(color: Colors.black54)),
-          const SizedBox(height: 8),
-          const Switch(
-            value: true, // Valor inicial do switch
-            onChanged: null, // Desabilitado para este exemplo visual
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Lembre-se de sempre desligar a bomba para evitar correr riscos.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.black54),
-          ),
         ],
       ),
     );
   }
 }
 
-// Classe para desenhar uma linha simples simulando um gráfico
+// Classe para desenhar o gráfico de linha
 class LineChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
