@@ -11,7 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  google_fonts: ^6.0.0  # Adicionado o pacote google_fonts
+  google_fonts: ^6.0.0  
+  http: ^1.2.1
 
 dev_dependencies:
   flutter_test:
