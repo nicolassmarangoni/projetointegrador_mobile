@@ -1,0 +1,2 @@
+C:/Users/nickb/OneDrive/Documents/projetointegrador_mobile/flutter_application_1/android/app/.cxx/Debug/1v2u3bn1/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/nickb/OneDrive/Documents/projetointegrador_mobile/flutter_application_1/android/app/.cxx/Debug/1v2u3bn1/armeabi-v7a/CMakeFiles/rebuild_cache.dir

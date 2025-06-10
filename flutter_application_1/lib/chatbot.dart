@@ -17,7 +17,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
 
   Future<void> _sendMessage() async {
     final userMessage = _controller.text.trim();
-    String url = "https://nicolakskk-spaceintegrador.hf.space/api/v1/run/739b69e1-96c0-49bb-8ce0-7fc53ca19862";
+    String url = "https://nicolakskk-spaceintegrador.hf.space/api/v1/run/0cf6fcbc-0971-45e5-be52-52c12dbed5f6";
 
     if (userMessage.isEmpty) return;
 

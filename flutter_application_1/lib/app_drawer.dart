@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/third_screen.dart'; // Importe a ThirdScreen
-import 'package:flutter_application_1/second_screen.dart'; // Importe a SecondScreen
-import 'package:flutter_application_1/dashboardscreen.dart'; // Importe a DashboardScreen
+import 'package:flutter_application_1/third_screen.dart';
+import 'package:flutter_application_1/second_screen.dart';
+import 'package:flutter_application_1/dashboardscreen.dart';
+import 'package:flutter_application_1/devices_screen.dart'; // Nova tela Aparelhos
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -20,7 +21,7 @@ class AppDrawer extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Image.asset(
-                  'assets/images/logo.png', // Substitua pelo caminho real da sua imagem
+                  'assets/images/logo.png',
                   height: 60,
                 ),
                 const SizedBox(height: 8),
@@ -37,8 +38,8 @@ class AppDrawer extends StatelessWidget {
           ListTile(
             title: const Text('Home'),
             onTap: () {
-              Navigator.pop(context); // Fecha o drawer
-              Navigator.pushReplacement( // Navega para a ThirdScreen
+              Navigator.pop(context);
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const ThirdScreen()),
               );
@@ -47,10 +48,20 @@ class AppDrawer extends StatelessWidget {
           ListTile(
             title: const Text('Dashboard'),
             onTap: () {
-              Navigator.pop(context); // Fecha o drawer
-              Navigator.pushReplacement( // Navega para a DashboardScreen
+              Navigator.pop(context);
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const DashboardScreen()),
+              );
+            },
+          ),
+          ListTile(
+            title: const Text('Aparelhos'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const DevicesScreen()),
               );
             },
           ),
@@ -68,15 +79,15 @@ class AppDrawer extends StatelessWidget {
           ListTile(
             title: const Text('FAQ'),
             onTap: () {
-              Navigator.pop(context); // Fecha o drawer
-              // TODO: Implementar ação para o FAQ (se houver uma tela específica)
+              Navigator.pop(context);
+              // TODO: Implementar ação para o FAQ
             },
           ),
           ListTile(
             title: const Text('Suporte'),
             onTap: () {
-              Navigator.pop(context); // Fecha o drawer
-              // TODO: Implementar ação para o Suporte (se houver uma tela específica)
+              Navigator.pop(context);
+              // TODO: Implementar ação para o Suporte
             },
           ),
           Padding(
@@ -86,8 +97,8 @@ class AppDrawer extends StatelessWidget {
                 backgroundColor: Colors.red,
               ),
               onPressed: () {
-                Navigator.pop(context); // Fecha o drawer
-                Navigator.pushReplacement( // Navega para a SecondScreen
+                Navigator.pop(context);
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => const SecondScreen()),
                 );

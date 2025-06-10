@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:async'; // Necessário para usar o Timer
+import 'dart:async';
+import 'package:flutter_application_1/third_screen.dart'; // Altere 'seu_app' para o nome do seu app ou diretório correto
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -11,24 +12,20 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  // Variáveis de estado
   int? temperatura;
   int? umidade;
   int? bomba;
   int? sensorUmidSolo;
   int? pH;
-  Color statusCor = Colors.red; // Cor inicial da bomba
-  bool _isLoading = false; // Indicador de carregamento
-  String? _errorMessage; // Mensagem de erro
-  Timer? _timer; // Timer para atualização periódica
+  Color statusCor = Colors.red;
+  bool _isLoading = false;
+  String? _errorMessage;
+  Timer? _timer;
 
-  // --- Funções de Requisição e Controle ---
-
-  // Função para realizar a leitura dos dados da API
   Future<void> _leitura() async {
     setState(() {
-      _isLoading = true; // Ativa o indicador de carregamento
-      _errorMessage = null; // Limpa mensagens de erro anteriores
+      _isLoading = true;
+      _errorMessage = null;
     });
     try {
       final response = await http.get(Uri.parse('https://apiintegradoresp-production.up.railway.app/dados'));
@@ -41,32 +38,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
           sensorUmidSolo = dados["sensor_umidsolo"];
           pH = dados["pH"];
           bomba = dados["bomba"];
-          // Atualiza a cor da bomba com base no estado real vindo da API
           statusCor = (bomba == 1) ? Colors.green : Colors.red;
         });
       } else {
         setState(() {
           _errorMessage = 'Falha ao carregar dados: ${response.statusCode}';
         });
-        throw Exception('Falha ao carregar dados: ${response.statusCode}');
       }
     } catch (e) {
       setState(() {
         _errorMessage = 'Erro de conexão: $e';
       });
-      print("Erro na requisição de leitura: $e");
     } finally {
       setState(() {
-        _isLoading = false; // Desativa o indicador de carregamento
+        _isLoading = false;
       });
     }
   }
 
-  // Função unificada para controlar a bomba (ligar/desligar)
   Future<void> _controlarBomba(int estado) async {
     setState(() {
-      _isLoading = true; // Ativa o indicador de carregamento
-      _errorMessage = null; // Limpa mensagens de erro anteriores
+      _isLoading = true;
+      _errorMessage = null;
     });
     try {
       final response = await http.post(
@@ -76,7 +69,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
 
       if (response.statusCode == 200) {
-        // Após o sucesso, força uma nova leitura para atualizar o estado da bomba na UI
         await _leitura();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -107,21 +99,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     } finally {
       setState(() {
-        _isLoading = false; // Desativa o indicador de carregamento
+        _isLoading = false;
       });
     }
   }
 
-  // --- Ciclo de Vida do Widget e Timer ---
-
   @override
   void initState() {
     super.initState();
-    _leitura(); // Realiza a primeira leitura ao carregar a tela
-    _startPolling(); // Inicia a atualização periódica dos dados
+    _leitura();
+    _startPolling();
   }
 
-  // Configura o timer para buscar dados a cada 10 segundos
   void _startPolling() {
     _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
       _leitura();
@@ -130,11 +119,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   void dispose() {
-    _timer?.cancel(); // Cancela o timer para evitar vazamentos de memória
+    _timer?.cancel();
     super.dispose();
   }
-
-  // --- Construção da UI ---
 
   @override
   Widget build(BuildContext context) {
@@ -142,12 +129,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: const Text('Dashboard'),
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const ThirdScreen()),
+            );
+          },
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Exibição de dados ou indicador de carregamento/erro
             _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _errorMessage != null
@@ -168,7 +163,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       )
                     : Column(
                         children: [
-                          // Seus cards de medição (agora com valores reais ou 'N/A')
                           _buildCard('Temperatura', temperatura?.toString() ?? 'N/A', Colors.yellow, LineChartPainter()),
                           const SizedBox(height: 16),
                           _buildCard('Umidade', umidade?.toString() ?? 'N/A', Colors.blue, LineChartPainter()),
@@ -179,15 +173,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           const SizedBox(height: 16),
                         ],
                       ),
-
-            // Controle da bomba (sempre visível, mas com _isLoading desabilitando botões)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: Container(
                 alignment: Alignment.center,
                 width: 200,
                 height: 200,
-                color: statusCor, // A cor da bomba é atualizada por _leitura()
+                color: statusCor,
                 child: const Text(
                   "Bomba de Irrigação",
                   textAlign: TextAlign.center,
@@ -196,15 +188,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             ElevatedButton(
-              onPressed: _isLoading ? null : () => _controlarBomba(1), // Desabilita se estiver carregando
+              onPressed: _isLoading ? null : () => _controlarBomba(1),
               child: const Text('Ligar Bomba'),
             ),
             ElevatedButton(
-              onPressed: _isLoading ? null : () => _controlarBomba(0), // Desabilita se estiver carregando
+              onPressed: _isLoading ? null : () => _controlarBomba(0),
               child: const Text('Desligar Bomba'),
             ),
             ElevatedButton(
-              onPressed: _isLoading ? null : _leitura, // Desabilita se estiver carregando
+              onPressed: _isLoading ? null : _leitura,
               child: const Text('Atualizar Dados Manualmente'),
             ),
           ],
@@ -213,7 +205,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Função para construir os cards de medição (inalterada do seu código)
   Widget _buildCard(String title, String value, Color statusColor, CustomPainter chart) {
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -250,7 +241,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-// Classe para desenhar o gráfico de linha (inalterada do seu código)
 class LineChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -271,7 +261,5 @@ class LineChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
-  }
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
